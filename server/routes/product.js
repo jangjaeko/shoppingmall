@@ -37,9 +37,28 @@ router.post('/',(req,res)=>{
 
 router.post('/products', (req,res) =>{
   // product collection에 있는 모든 상품 찾기
-  let limit = req.body.limit ? parseInt(req.body.limit) : 10 ; //parseInt - string change to int
+  let limit = req.body.limit ? parseInt(req.body.limit) : 20 ; //parseInt - string change to int
   let skip = req.body.skip ? parseInt(req.body.skip) : 0;
-  Product.find()
+
+  let findArgs = {};
+
+  for(let key in req.body.filters) {
+    if ( req.body.filters[key].length > 0){
+      if(key === "price"){
+        findArgs[key] ={
+          $gte : req.body.filters[key][0],
+          //greater than equal (in mongodb)
+          $lte : req.body.filters[key][1]
+          //less than equal (in mongodb)   for 양쪽 끝 숫자
+        }
+      }else{
+        findArgs[key] = req.body.filters[key];
+      }
+    }
+  }
+
+
+  Product.find(findArgs)
     .populate("writer")
     .skip(skip)
     .limit(limit)
