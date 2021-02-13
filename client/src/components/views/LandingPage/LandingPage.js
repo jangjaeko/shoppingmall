@@ -7,6 +7,8 @@ import ImageSlider from '../../utils/ImageSlider';
 import CheckBox from './Section/CheckBox';
 import {continents , price} from './Section/Datas'
 import RadioBox from './Section/RadioBox';
+import SearchFeature from './Section/SearchFeature'
+
 
 function LandingPage() {
     
@@ -18,7 +20,7 @@ function LandingPage() {
         continents : [],
         price :  []
     })
-
+    const [SearchTerm, setSearchTerm] = useState("")
 
     useEffect(() => {
         
@@ -106,6 +108,20 @@ function LandingPage() {
         showFilteredResults(newFilters)
         setFilters(newFilters)
     }
+    
+    const updateSearchTerm = (newSearchTerm) =>{
+        setSearchTerm(newSearchTerm)
+
+        let body ={
+            skip : 0,
+            limit : 6,
+            filters : Filters,
+            searchTerm : newSearchTerm
+        }
+        setSkip(0)
+        setSearchTerm(newSearchTerm)
+        getProducts(body)
+    }
 
     return (
         <div style ={{width : '75%', margin : '3rem auto' }} >
@@ -127,11 +143,12 @@ function LandingPage() {
             </Row>
           
             
-
-
             {/* Search */ }
-
-
+            <div style = {{display : 'flex', justifyContent:'flex-end', margin:'1rem'}}>
+                <SearchFeature  
+                    refreshFunction = {updateSearchTerm}
+                />
+            </div>
             {/* card*/ }
             <Row gutter={[16,16]}>
             {renderCards}

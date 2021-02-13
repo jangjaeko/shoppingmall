@@ -37,6 +37,16 @@ const productSchema = mongoose.Schema ({
     }
 },{timestamps : true})
 
+productSchema.index({
+    title :'text',
+    description:'text'
+},{
+    weights:{
+        title : 5,
+        description :1
+    }
+})
+//중요도를 줘서 검색 우선순위를 둔다.
 
 const Product = mongoose.model('Product', productSchema);
 
