@@ -1,6 +1,5 @@
 import React from 'react'
 import { Descriptions, Badge, Button } from 'antd';
-import axios from 'axios';
 import { useDispatch} from 'react-redux';
 import {addToCart} from '../../../../_actions/user_actions';
 

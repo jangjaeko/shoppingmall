@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { User } = require("../models/User");
-
+const {Product} = require('../models/Product');
 const { auth } = require("../middleware/auth");
 
 //=================================
@@ -18,6 +18,8 @@ router.get("/auth", auth, (req, res) => {
         lastname: req.user.lastname,
         role: req.user.role,
         image: req.user.image,
+        cart : req.user.cart,
+        history : req.user.history,
     });
 });
 
@@ -69,51 +71,50 @@ router.get("/logout", auth, (req, res) => {
 });
 
 
-router.post("/addToCart", auth, (req, res) => {
-    //먼저 user collections에 해당 정보를 가져온다.
-    User.findOne({_id : req.user._id},
-        (err,userInfo) => {
-            //가져온 정보에서 카트에다 넣으려 하는 상품이 이미 들어 있는지 확인
+router.get('/addToCart', auth, (req, res) => {
 
-            userInfo.cart.forEach((item)=>{
-                if(item.id === req.body.productId){
-                    duplicate = true;
-                }
-            })
-            if(duplicate) {
-            //상품이 이미 있을 경우
-                User.findOneAndUpdate (
-                    {id:req.user._id , "cart.id": req.body.productId} ,
-                    {$inc : {"cart.$.quantity":1}},
-                    {new : true}, // update된 유저 정보를 받으려면 필요   
-                    (err, userInfo) => {
-                        if(err) return res.status(400).json({success: false, err})
-                        res.status(200).send(userInfo.cart)
-                    }
-                )      
-            }
-            else{
-            //상품이 이미 있지 않을 경우 
-                User.findOneAndUpdate (
-                    {id:req.user._id} ,
-                    {
-                        $push : {
-                            cart:{
-                                id: req.body.productId,
-                                quentity : 1,
-                                date : Date.now()
-                            }
-                        }
-                    },
-                    {new : true },
-                    (err, userInfo) => {
-                        if(err) return res.status(400).json({success : false , err})
-                        return res.status(200).send(userInfo.cart)
-                    }
-                )
+    User.findOne({ _id: req.user._id }, (err, userInfo) => {
+        let duplicate = false;
+
+        console.log(userInfo)
+
+        userInfo.cart.forEach((item) => {
+            if (item.id == req.query.productId) {
+                duplicate = true;
             }
         })
 
+
+        if (duplicate) {
+            User.findOneAndUpdate(
+                { _id: req.user._id, "cart.id": req.query.productId },
+                { $inc: { "cart.$.quantity": 1 } },
+                { new: true },
+                (err, userInfo) => {
+                    if (err) return res.json({ success: false, err });
+                    res.status(200).json(userInfo.cart)
+                }
+            )
+        } else {
+            User.findOneAndUpdate(
+                { _id: req.user._id },
+                {
+                    $push: {
+                        cart: {
+                            id: req.query.productId,
+                            quantity: 1,
+                            date: Date.now()
+                        }
+                    }
+                },
+                { new: true },
+                (err, userInfo) => {
+                    if (err) return res.json({ success: false, err });
+                    res.status(200).json(userInfo.cart)
+                }
+            )
+        }
+    })
 });
 
 module.exports = router;
